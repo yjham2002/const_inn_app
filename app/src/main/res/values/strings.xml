@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">건설인</string>
+    <string name="ad_attribution">Ad</string>
+    <string name="default_notification_channel_id">kr.co.picklecode.const_inn.default_channel</string>
+</resources>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="10dp"
+    android:background="@color/white"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_gravity="left|top"
+            android:src="@drawable/logo_blue"
+            android:layout_width="80dp"
+            android:layout_height="25dp" />
+        <ImageView
+            android:layout_gravity="right|top"
+            android:id="@+id/noti_close"
+            android:clickable="true"
+            android:src="@drawable/btn_close"
+            android:layout_width="25dp"
+            android:layout_height="25dp" />
+    </FrameLayout>
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:src="@drawable/capt_noti"
+            android:layout_width="10dp"
+            android:layout_height="20dp" />
+        <TextView
+            android:id="@+id/noti_class"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:text="분류"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <ImageView
+            android:src="@drawable/capt_noti"
+            android:layout_width="10dp"
+            android:layout_height="20dp" />
+    </LinearLayout>
+    <TextView
+        android:layout_marginTop="10dp"
+        android:padding="10dp"
+        android:id="@+id/noti_msg"
+        android:text="이곳에 메시지가 출력됩니다."
+        android:textSize="12dp"
+        android:textColor="@color/black"
+        android:layout_width="match_parent"
+        android:background="@drawable/round_background"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/noti_guide"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:text="이곳에 안내 메시지가 출력됩니다."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:padding="20dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/noti_yes"
+            android:clickable="true"
+            android:src="@drawable/btn_noti_yes"
+            android:layout_marginRight="30dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp" />
+        <ImageView
+            android:id="@+id/noti_no"
+            android:clickable="true"
+            android:src="@drawable/btn_noti_no"
+            android:layout_width="50dp"
+            android:layout_height="50dp" />
+    </LinearLayout>
+
+</LinearLayout>

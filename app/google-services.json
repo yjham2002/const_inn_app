@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "189174838475",
+    "firebase_url": "https://construction-man.firebaseio.com",
+    "project_id": "construction-man",
+    "storage_bucket": "construction-man.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189174838475:android:4c166f31c4ae0630",
+        "android_client_info": {
+          "package_name": "kr.co.picklecode.const_inn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "189174838475-gvqklodc2nt02sbuo8edi7nab48g69cm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.co.picklecode.const_inn",
+            "certificate_hash": "f4d9be17d263126b2c7094770e25c665c39f51f3"
+          }
+        },
+        {
+          "client_id": "189174838475-kcuct0olu6160j3euu4c6gdabkv0neh7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAfH4SWGnm32oEURV3QwogYGVbG3JET2M"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189174838475-kcuct0olu6160j3euu4c6gdabkv0neh7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
