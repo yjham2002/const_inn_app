@@ -1,21 +1,17 @@
 package bases;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +19,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RatingBar;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,8 +36,13 @@ import com.google.android.gms.ads.formats.NativeAppInstallAdView;
 import com.google.android.gms.ads.formats.NativeContentAd;
 import com.google.android.gms.ads.formats.NativeContentAdView;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import bases.callbacks.SimpleCallback;
+import comm.SimpleCall;
 import kr.co.picklecode.const_inn.R;
 
 /**
@@ -87,8 +87,97 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         return false;
     }
 
+    private static final int PICK_FROM_ALBUM = 0x950503;
+    private static final int CROP_FROM_ALBUM = 0x931018;
+    private Uri mImageCaptureUri = null;
+    protected String imageUploadUrl = null;
+    protected Handler imageUploadHandler = null;
+
+    private volatile boolean imageOngoing = false;
+
+    public void takeAlbumAndUpload(String imageUploadUrl, Handler imageUploadHandler, boolean cropAction){
+        if(this.imageOngoing) return;
+
+        this.imageOngoing = true;
+
+        this.imageUploadUrl = imageUploadUrl;
+        this.imageUploadHandler = imageUploadHandler;
+
+        final Intent intent = new Intent();
+        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        intent.setAction(Intent.ACTION_PICK);
+        mImageCaptureUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "tmp_img.jpg"));
+        intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, mImageCaptureUri);
+
+        if(cropAction) {
+            startActivityForResult(intent, CROP_FROM_ALBUM);
+        } else {
+            startActivityForResult(intent, PICK_FROM_ALBUM);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        this.imageOngoing = false;
+
+        if (resultCode != this.RESULT_OK) {
+            return;
+        }
+        switch (requestCode) {
+            case PICK_FROM_ALBUM: {
+                mImageCaptureUri = data.getData();
+                Intent intent = new Intent("com.android.camera.action.CROP");
+                intent.setDataAndType(mImageCaptureUri, "image/*");
+                //intent.putExtra("outputX", 200);
+                //intent.putExtra("outputY", 200);
+                //intent.putExtra("aspectX", 1);
+                //intent.putExtra("aspectY", 1);
+                intent.putExtra("scale", true);
+                intent.putExtra("return-data", true);
+
+                startActivityForResult(intent, CROP_FROM_ALBUM);
+                break;
+            }
+            case CROP_FROM_ALBUM: {
+                final Bundle extras = data.getExtras();
+
+                if (extras != null) {
+                    Bitmap photo = extras.getParcelable("data");
+                    try {
+                        BufferedOutputStream out = new BufferedOutputStream(this.openFileOutput("temp.jpg", 0));
+                        photo.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                        out.flush();
+                        out.close();
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
+                }
+
+                try {
+                    File f = new File(mImageCaptureUri.getPath());
+                    if (f.exists()) f.delete();
+                } catch (Exception e) {
+                }
+
+                if(this.imageUploadUrl != null && this.imageUploadHandler != null) {
+                    SimpleCall.sendImg(this.imageUploadUrl, this.getFilesDir() + "/temp.jpg", this.imageUploadHandler);
+                }else{
+                    showToastAndLog("An error occurred while uploading images.");
+                }
+
+                break;
+            }
+        }
+    }
+
     public void showToast(String message){
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    public void showToastAndLog(String message){
+        showToast(message);
+        Log.e(this.getClass().getSimpleName(), message);
     }
 
     @Override
