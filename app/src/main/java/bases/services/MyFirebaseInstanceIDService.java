@@ -45,6 +45,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
             public void handle(JSONObject jsonObject) {
                 Log.e("userInfo", jsonObject.toString());
             }
-        });
+        }, null);
     }
 }

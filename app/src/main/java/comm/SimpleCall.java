@@ -37,6 +37,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import bases.callbacks.SimpleCallback;
+
 public class SimpleCall {
     private static String webUrl = "";
     private static String jsoupTemp = "";
@@ -45,7 +47,7 @@ public class SimpleCall {
         void handle(JSONObject jsonObject);
     }
 
-    public static void getHttpJson(String url, Map<String, Object> queryParam, final CallBack callBack){
+    public static void getHttpJson(String url, Map<String, Object> queryParam, final CallBack callBack, final SimpleCallback onFailure){
         final StringBuffer stringBuffer = new StringBuffer();
         final Set<String> keySet = queryParam.keySet();
         for(String key : keySet) {
@@ -55,17 +57,20 @@ public class SimpleCall {
 
         Log.e("RequestURL", newUrl);
 
-        Looper.prepare();
+        if(Looper.myLooper() == null) Looper.prepare();
 
         getHttp(newUrl, new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                Log.e("ResponseCall", msg.getData().toString());
                 String jsonString = msg.getData().getString("jsonString");
                 try {
+                    if(jsonString == null || jsonString.equals("")) throw new IOException();
                     JSONObject json_obj = new JSONObject(jsonString);
-                    callBack.handle(json_obj);
+                    if(callBack != null) callBack.handle(json_obj);
                 }catch (Exception e){
+                    if(onFailure != null) onFailure.callback();
                     e.printStackTrace();
                 }
             }

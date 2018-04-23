@@ -1,7 +1,9 @@
 package bases;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -12,6 +14,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -39,6 +44,8 @@ import com.google.android.gms.ads.formats.NativeContentAdView;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import bases.callbacks.SimpleCallback;
@@ -54,7 +61,8 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     private InterstitialAd mInterstitialAd = null;
 
-    public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 5469;
+    public static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 5469;
+    public static final int ACTION_PERMISSION_ASKING = 392;
 
     protected boolean canDrawOverlaysTest() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -66,6 +74,26 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             }
         }
         return true;
+    }
+
+    protected void checkPermissions(String... REQUIRED_SDK_PERMISSIONS) {
+        final List<String> missingPermissions = new ArrayList<>();
+        // check all required dynamic permissions
+        for (final String permission : REQUIRED_SDK_PERMISSIONS) {
+            final int result = ContextCompat.checkSelfPermission(this, permission);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                missingPermissions.add(permission);
+            }
+        }
+        if (!missingPermissions.isEmpty()) {
+            final String[] permissions = missingPermissions
+                    .toArray(new String[missingPermissions.size()]);
+            ActivityCompat.requestPermissions(this, permissions, ACTION_PERMISSION_ASKING);
+        } else {
+            final int[] grantResults = new int[REQUIRED_SDK_PERMISSIONS.length];
+            Arrays.fill(grantResults, PackageManager.PERMISSION_GRANTED);
+            onRequestPermissionsResult(ACTION_PERMISSION_ASKING, REQUIRED_SDK_PERMISSIONS, grantResults);
+        }
     }
 
     protected boolean onPermissionActivityResult(int requestCode){
