@@ -3,6 +3,7 @@ package bases;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -29,6 +30,7 @@ public abstract class BaseWebViewActivity extends BaseActivity {
     }
 
     protected void loadUrl(String url){
+        Log.e(this.getClass().getSimpleName(), "loadUrl : " + url);
         this.webView.loadUrl(url);
     }
 
@@ -48,7 +50,7 @@ public abstract class BaseWebViewActivity extends BaseActivity {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     if(url.startsWith(scheme)){
-                        if(overrideAction != null) overrideAction.callback(view, url);
+                        if(overrideAction != null) overrideAction.callback(view, url.replaceFirst(scheme, ""));
                         return true;
                     }
                     return super.shouldOverrideUrlLoading(view, url);

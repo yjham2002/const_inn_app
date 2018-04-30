@@ -65,7 +65,7 @@ public class MainActivity extends BaseWebViewActivity {
     private void nativeCall_sendPushKey(String pushKey){
         try {
             String encoded = URLEncoder.encode(pushKey, "UTF-8");
-            this.loadUrl("javascript:getPushKeyCallBack(" + encoded + ")");
+            this.loadUrl("javascript:getPushKeyCallBack( + \'" + encoded + "\')");
         }catch (UnsupportedEncodingException e){
             e.printStackTrace();
         }
