@@ -11,13 +11,13 @@
         <item name="android:windowBackground">@color/windowBackground</item>
         <item name="android:navigationBarColor">@color/black</item>
         <item name="android:textColorHint">@color/white</item>
-        <item name="android:colorControlNormal">@color/white</item>
+        <item name="android:colorControlNormal">@color/jet</item>
         <item name="android:colorControlActivated">@color/white</item>
         <item name="android:colorControlHighlight">@color/white</item>
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
         <item name="colorControlHighlight">@color/white</item>
-        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/jet</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
