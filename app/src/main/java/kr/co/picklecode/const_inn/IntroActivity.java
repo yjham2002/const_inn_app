@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import bases.BaseActivity;
+import bases.Configs;
 import bases.callbacks.SimpleCallback;
 import comm.SimpleCall;
 import comm.model.UserModel;
@@ -27,7 +28,7 @@ public class IntroActivity extends BaseActivity {
         public void run() {
             Map<String, Object> params = new HashMap<>();
 
-            SimpleCall.getHttpJson("http://172.30.1.32:10040/web/introprocess", params, new SimpleCall.CallBack() {
+            SimpleCall.getHttpJson(Configs.BASE_URL + "/web/introprocess", params, new SimpleCall.CallBack() {
                 @Override
                 public void handle(JSONObject jsonObject) {
                     Intent i = new Intent(IntroActivity.this, MainActivity.class);

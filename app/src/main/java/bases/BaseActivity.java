@@ -86,8 +86,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             }
         }
         if (!missingPermissions.isEmpty()) {
-            final String[] permissions = missingPermissions
-                    .toArray(new String[missingPermissions.size()]);
+            final String[] permissions = missingPermissions.toArray(new String[missingPermissions.size()]);
             ActivityCompat.requestPermissions(this, permissions, ACTION_PERMISSION_ASKING);
         } else {
             final int[] grantResults = new int[REQUIRED_SDK_PERMISSIONS.length];
