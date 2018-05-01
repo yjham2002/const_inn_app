@@ -75,7 +75,7 @@ public class IntroActivity extends BaseActivity {
 
         if(UserModel.getFromPreference() != null) Log.e("userInfo", UserModel.getFromPreference().toString());
 
-        checkPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS);
+        checkPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS);
     }
 
     @Override

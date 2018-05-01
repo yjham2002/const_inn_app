@@ -456,6 +456,7 @@ public class SimpleCall {
         String boundary = "*****";
         String delimiter = "\r\n--" + boundary + "\r\n";
 
+
         HttpURLConnection httpUrlConnection = null;
         URL url;
         String response = "";
@@ -481,7 +482,7 @@ public class SimpleCall {
             request.writeBytes(crlf);
             request.writeBytes(type);
             request.writeBytes(delimiter);
-            request.writeBytes("Content-Disposition: form-data; name=uploadedfile; filename=\"" + attachmentFileName + "\"" + crlf);
+            request.writeBytes("Content-Disposition: form-data; name=uploadImg; filename=\"" + attachmentFileName + "\"" + crlf);
             request.writeBytes(crlf);
             FileInputStream bis = new FileInputStream(filePath);
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -41,14 +43,22 @@ import com.google.android.gms.ads.formats.NativeAppInstallAdView;
 import com.google.android.gms.ads.formats.NativeContentAd;
 import com.google.android.gms.ads.formats.NativeContentAdView;
 
+import net.gotev.uploadservice.MultipartUploadRequest;
+import net.gotev.uploadservice.UploadNotificationConfig;
+
+import org.json.JSONObject;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import bases.callbacks.SimpleCallback;
+import bases.callbacks.SingleUploadBroadcastReceiver;
 import comm.SimpleCall;
 import kr.co.picklecode.const_inn.R;
 
@@ -57,12 +67,14 @@ import kr.co.picklecode.const_inn.R;
  * @author EuiJin.Ham
  * @version 1.0.0
  */
-public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
+public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener, SingleUploadBroadcastReceiver.Delegate{
 
     private InterstitialAd mInterstitialAd = null;
 
     public static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 5469;
     public static final int ACTION_PERMISSION_ASKING = 392;
+
+    private final SingleUploadBroadcastReceiver uploadReceiver = new SingleUploadBroadcastReceiver();
 
     protected boolean canDrawOverlaysTest() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -95,6 +107,18 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        uploadReceiver.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        uploadReceiver.unregister(this);
+    }
+
     protected boolean onPermissionActivityResult(int requestCode){
         if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -114,15 +138,16 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         return false;
     }
 
-    private static final int PICK_FROM_ALBUM = 0x950503;
-    private static final int CROP_FROM_ALBUM = 0x931018;
+    private static final int PICK_FROM_ALBUM = 119;
+    private static final int CROP_FROM_ALBUM = 121;
+
     private Uri mImageCaptureUri = null;
     protected String imageUploadUrl = null;
     protected Handler imageUploadHandler = null;
 
     private volatile boolean imageOngoing = false;
 
-    public void takeAlbumAndUpload(String imageUploadUrl, Handler imageUploadHandler, boolean cropAction){
+    public void takeAlbumAndUpload(String imageUploadUrl, Handler imageUploadHandler){
         if(this.imageOngoing) return;
 
         this.imageOngoing = true;
@@ -130,17 +155,13 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         this.imageUploadUrl = imageUploadUrl;
         this.imageUploadHandler = imageUploadHandler;
 
-        final Intent intent = new Intent();
-        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        intent.setAction(Intent.ACTION_PICK);
-        mImageCaptureUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "tmp_img.jpg"));
-        intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, mImageCaptureUri);
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.putExtra("scale", true);
+        intent.putExtra("return-data", true);
 
-        if(cropAction) {
-            startActivityForResult(intent, CROP_FROM_ALBUM);
-        } else {
-            startActivityForResult(intent, PICK_FROM_ALBUM);
-        }
+        startActivityForResult(intent, CROP_FROM_ALBUM);
     }
 
     @Override
@@ -151,51 +172,98 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             return;
         }
         switch (requestCode) {
-            case PICK_FROM_ALBUM: {
-                mImageCaptureUri = data.getData();
-                Intent intent = new Intent("com.android.camera.action.CROP");
-                intent.setDataAndType(mImageCaptureUri, "image/*");
-                //intent.putExtra("outputX", 200);
-                //intent.putExtra("outputY", 200);
-                //intent.putExtra("aspectX", 1);
-                //intent.putExtra("aspectY", 1);
-                intent.putExtra("scale", true);
-                intent.putExtra("return-data", true);
-
-                startActivityForResult(intent, CROP_FROM_ALBUM);
-                break;
-            }
             case CROP_FROM_ALBUM: {
-                final Bundle extras = data.getExtras();
 
-                if (extras != null) {
-                    Bitmap photo = extras.getParcelable("data");
-                    try {
-                        BufferedOutputStream out = new BufferedOutputStream(this.openFileOutput("temp.jpg", 0));
-                        photo.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                        out.flush();
-                        out.close();
-                    } catch (IOException e) {
+                if(data != null && data.getData() != null) {
+                    mImageCaptureUri = data.getData();
 
-                        e.printStackTrace();
+                    Log.e("BaseApp", this.getFilesDir().toString());
+                    Log.e("BaseApp", getPath(mImageCaptureUri));
+                    Log.e("BaseApp", mImageCaptureUri.toString());
+                    Log.e("BaseApp", mImageCaptureUri.getPath());
+
+                    if (this.imageUploadUrl != null && this.imageUploadHandler != null) {
+//                    SimpleCall.sendImg(this.imageUploadUrl, this.getFilesDir() + "/temp.jpg", );
+                        try {
+                            String uploadId = UUID.randomUUID().toString();
+                            uploadReceiver.setDelegate(this);
+                            uploadReceiver.setUploadID(uploadId);
+
+                            //Creating a multi part request
+                            new MultipartUploadRequest(this, uploadId, this.imageUploadUrl)
+                                    .addFileToUpload(getPath(mImageCaptureUri), "uploadImg")
+//                                .addParameter("name", "uploadImg")
+                                    .setNotificationConfig(new UploadNotificationConfig())
+                                    .setMaxRetries(2)
+                                    .startUpload();
+
+                        } catch (Exception exc) {
+                            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+//                        try {
+//                            File f = new File(mImageCaptureUri.getPath());
+//                            if (f.exists()) f.delete();
+//                        } catch (Exception e) {
+//                        }
+                    } else {
+                        showToastAndLog("An error occurred while uploading images.");
                     }
                 }
-
-                try {
-                    File f = new File(mImageCaptureUri.getPath());
-                    if (f.exists()) f.delete();
-                } catch (Exception e) {
-                }
-
-                if(this.imageUploadUrl != null && this.imageUploadHandler != null) {
-                    SimpleCall.sendImg(this.imageUploadUrl, this.getFilesDir() + "/temp.jpg", this.imageUploadHandler);
-                }else{
-                    showToastAndLog("An error occurred while uploading images.");
-                }
-
                 break;
             }
         }
+    }
+
+    public String getPath(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        String document_id = cursor.getString(0);
+        document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
+        cursor.close();
+
+        cursor = getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+        cursor.close();
+
+        return path;
+    }
+
+    @Override
+    public void onError(Exception exception) {
+        exception.printStackTrace();
+    }
+
+    @Override
+    public void onCompleted(int serverResponseCode, byte[] serverResponseBody) {
+        try {
+            Message msg = this.imageUploadHandler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putString("jsonString", new String(serverResponseBody, "UTF-8"));
+            msg.setData(bundle);
+            this.imageUploadHandler.sendMessage(msg);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        Log.e("onComplete", Arrays.toString(serverResponseBody));
+    }
+
+    @Override
+    public void onProgress(int progress) {
+        Log.e("onProgress", progress + "");
+    }
+
+    @Override
+    public void onProgress(long uploadedBytes, long totalBytes) {
+
+    }
+
+    @Override
+    public void onCancelled() {
+        Log.e("onCancelled", "true");
     }
 
     public void showToast(String message){
