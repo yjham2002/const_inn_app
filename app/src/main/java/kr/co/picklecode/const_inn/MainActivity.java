@@ -43,22 +43,34 @@ public class MainActivity extends BaseWebViewActivity {
                 Log.e(TAG, "overrode url : " + string);
                 switch (string){
                     case "getPushKey" : {
-                        nativeCall_sendPushKey(UserModel.getFromPreference().getMessageToken());
+                        if(UserModel.isSatisfied()) nativeCall_sendPushKey(UserModel.getFromPreference().getMessageToken());
                         break;
                     }
                     case "cropImage" : {
                         nativeCall_cropImage();
                         break;
                     }
-                    case "setAutoLoginTrue" : {
-                        // TODO
+                    default: {
+                        if(string.contains("?")) {
+                            String paramCall = string.substring(0, string.indexOf("?"));
+                            String params = string.substring(string.indexOf("?") + 1, string.length());
+                            Log.e(TAG, "overrode url(param) : [" + paramCall + "] [" + params + "]");
+
+                            switch (paramCall){
+                                case "loginProcess" : {
+                                    try{
+                                        int userNo = Integer.parseInt(params.substring(params.indexOf("id") + 3, params.length()));
+                                        nativeCall_loginProcess(params.contains("auto=true"), userNo);
+                                    }catch (NumberFormatException e){
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                }
+                                default: break;
+                            }
+                        }
                         break;
                     }
-                    case "setAutoLoginFalse" : {
-                        // TODO
-                        break;
-                    }
-                    default: break;
                 }
             }
         }, new SimpleWebViewCallback() {
@@ -68,7 +80,14 @@ public class MainActivity extends BaseWebViewActivity {
             }
         });
 
-        this.moveWithinBase("");
+        UserModel userModel = UserModel.getFromPreference();
+
+        if(UserModel.isSatisfied()){
+            final boolean autoLogin = userModel.isAutoLogin();
+            this.moveWithinBase(String.format("?auto=%s&id=%d", Boolean.toString(autoLogin), userModel.getUserNo()));
+        }else{
+            this.moveWithinBase("");
+        }
     }
 
     @Override
@@ -82,6 +101,7 @@ public class MainActivity extends BaseWebViewActivity {
     }
 
     private void nativeCall_sendPushKey(String pushKey){
+        if(pushKey == null) return;
         try {
             String encoded = URLEncoder.encode(pushKey, "UTF-8");
             this.loadUrl("javascript:getPushKeyCallBack(\'" + encoded + "\')");
@@ -109,6 +129,18 @@ public class MainActivity extends BaseWebViewActivity {
                 }
             }
         });
+    }
+
+    private void nativeCall_loginProcess(boolean isAutoLogin, int userNo){
+        UserModel userModel = UserModel.getFromPreference();
+        if(!UserModel.isSatisfied()){
+            userModel = new UserModel();
+        }
+        userModel.setAutoLogin(isAutoLogin);
+        userModel.setUserNo(userNo);
+        userModel.saveAsPreference();
+
+        this.moveWithinBase("pages/search/searchMain.php");
     }
 
     private void nativeCall_sendImageMeta(String path){

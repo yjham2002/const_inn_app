@@ -19,9 +19,11 @@ public class Constants {
     public interface INTENT_NOTIFICATION{
         String REP_FILTER = "kr.co.picklecode.const_inn.action.notification";
         String ACTION_YES = "kr.co.picklecode.const_inn.action.notification.yes";
+        int REQ_CODE_ACTION_REDIRECT = 101;
         int REQ_CODE_ACTION_YES = 111;
         String ACTION_NO = "kr.co.picklecode.const_inn.action.notification.no";
         int REQ_CODE_ACTION_NO = 121;
+        int REQ_CODE_ACTION_CLOSE = 131;
     }
 
     public static final String ACTIVITY_INTENT_FILTER = "kr.co.picklecode.const_inn.intent.activity.common";

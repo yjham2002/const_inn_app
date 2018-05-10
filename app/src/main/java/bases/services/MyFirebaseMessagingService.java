@@ -14,6 +14,8 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Map;
+
 import kr.co.picklecode.const_inn.MainActivity;
 import kr.co.picklecode.const_inn.R;
 
@@ -32,14 +34,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null && remoteMessage.getNotification().getTitle() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), null);
         }else{
             Log.d(TAG, "Message Data Body: " + remoteMessage.getData().toString());
-            sendNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"));
+            sendNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"), remoteMessage.getData());
         }
     }
 
-    protected void sendNotification(String title, String body) {
+    protected void sendNotification(String title, String body, Map<String, String> extra) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,

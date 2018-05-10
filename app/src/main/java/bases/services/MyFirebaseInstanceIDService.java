@@ -26,11 +26,10 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
         UserModel userModel = UserModel.getFromPreference();
-        if(userModel == null){
+        if(!UserModel.isSatisfied()){
             userModel = new UserModel();
         }
 
-        userModel.setUserNo(1);
         userModel.setMessageToken(refreshedToken);
         userModel.saveAsPreference();
 

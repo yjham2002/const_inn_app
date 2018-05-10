@@ -9,7 +9,9 @@ import bases.utils.PreferenceUtil;
 
 public class UserModel extends PrefModel{
 
-    private int userNo;
+    private static final int NOT_YET = -1;
+
+    private int userNo = NOT_YET;
     private boolean isAutoLogin;
     private String account;
     private String password;
@@ -50,6 +52,11 @@ public class UserModel extends PrefModel{
         }finally {
             return userModel;
         }
+    }
+
+    public static boolean isSatisfied(){
+        if(getFromPreference() != null) return true;
+        return false;
     }
 
     public boolean saveAsPreference(){
