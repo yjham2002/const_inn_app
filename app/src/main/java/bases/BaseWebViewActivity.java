@@ -1,11 +1,13 @@
 package bases;
 
+import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -76,6 +78,8 @@ public abstract class BaseWebViewActivity extends BaseActivity {
             webView.setWebChromeClient(new WebChromeClient());
             webView.getSettings().setPluginState(WebSettings.PluginState.ON);
             webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+            webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            webView.getSettings().setSupportMultipleWindows(true);
             webView.setHorizontalScrollBarEnabled(true);
             webView.setVerticalScrollBarEnabled(true);
             webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
@@ -122,9 +126,16 @@ public abstract class BaseWebViewActivity extends BaseActivity {
         }
     };
 
+    protected WebView window;
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)){
+            if(window != null) {
+                this.webView.removeView(window);
+                this.window.destroy();
+                this.window = null;
+            }
             if(this.isAfterHistoryBase()){
                 this.webView.goBack();
                 return false;

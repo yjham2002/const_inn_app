@@ -6,8 +6,8 @@ package bases;
 
 public class Configs {
 
-    public static final String BASE_URL = "http://172.20.10.3:10040";
-    public static final String BASE_WEB_URL = "http://172.20.10.3:8100/userApp";
+    public static final String BASE_URL = "http://huneps.com:10040";
+    public static final String BASE_WEB_URL = "http://huneps.com:8100/userApp";
     public static final int NOTIFICATION_ID = 20141212;
 
 }

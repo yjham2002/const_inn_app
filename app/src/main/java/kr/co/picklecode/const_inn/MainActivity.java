@@ -1,10 +1,12 @@
 package kr.co.picklecode.const_inn;
 
+import android.app.Dialog;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import org.json.JSONObject;
@@ -76,7 +78,47 @@ public class MainActivity extends BaseWebViewActivity {
         }, new SimpleWebViewCallback() {
             @Override
             public void callback(WebView webView, String string) {
+                if(string.contains("mypageMain.php")){
+                    if(window != null) {
+                        MainActivity.this.webView.removeView(window);
+                        MainActivity.this.window.destroy();
+                        MainActivity.this.window = null;
+                    }
+                }
                 Log.e(TAG, "onPageFinished : " + string);
+            }
+        });
+
+        this.webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+                Log.e("onCreateWindow", "SOWED");
+                WebView newWebView = new WebView(view.getContext());
+                newWebView.getSettings().setJavaScriptEnabled(true);
+                newWebView.getSettings().setSupportZoom(true);
+                newWebView.getSettings().setBuiltInZoomControls(true);
+                newWebView.getSettings().setSupportMultipleWindows(true);
+                newWebView.setWebChromeClient(new WebChromeClient(){
+                    @Override
+                    public void onCloseWindow(WebView window) {
+                        super.onCloseWindow(window);
+                        webView.removeView(window);
+                        Log.e("onCreateWindow", "CLOSED CALLED");
+                    }
+                });
+                view.addView(newWebView);
+                MainActivity.this.window = newWebView;
+                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                transport.setWebView(newWebView);
+                resultMsg.sendToTarget();
+
+                return true;
+            }
+            @Override
+            public void onCloseWindow(WebView window) {
+                super.onCloseWindow(window);
+                webView.removeView(window);
+                Log.e("onCreateWindow", "CLOSED CALLED");
             }
         });
 
