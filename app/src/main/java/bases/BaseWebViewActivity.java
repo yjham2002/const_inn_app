@@ -1,7 +1,9 @@
 package bases;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -53,6 +55,10 @@ public abstract class BaseWebViewActivity extends BaseActivity {
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     if(url.startsWith(scheme)){
                         if(overrideAction != null) overrideAction.callback(view, url.replaceFirst(scheme, ""));
+                        return true;
+                    }else if(url.startsWith("tel:")){
+                        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+                        startActivity(intent);
                         return true;
                     }
                     return super.shouldOverrideUrlLoading(view, url);
@@ -136,7 +142,7 @@ public abstract class BaseWebViewActivity extends BaseActivity {
                 this.window.destroy();
                 this.window = null;
             }
-            if(this.isAfterHistoryBase()){
+            if(this.isAfterHistoryBase() && this.webView.canGoBack()){
                 this.webView.goBack();
                 return false;
             }else{

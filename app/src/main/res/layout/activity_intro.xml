@@ -4,20 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/introPink"
+    android:background="@color/colorPrimary"
     android:orientation="vertical"
     android:layout_gravity="center"
     android:gravity="center"
     tools:context="kr.co.picklecode.const_inn.IntroActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="20dp"
-        android:textColor="@color/white"
-        android:text="@string/app_name" />
+    <ImageView
+        android:src="@mipmap/ic_launcher"
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
     <ProgressBar
         android:layout_margin="20dp"
         android:layout_width="20dp"

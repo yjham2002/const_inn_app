@@ -52,6 +52,10 @@ public class MainActivity extends BaseWebViewActivity {
                         nativeCall_cropImage();
                         break;
                     }
+                    case "logout" : {
+                        nativeCall_logout();
+                        break;
+                    }
                     default: {
                         if(string.contains("?")) {
                             String paramCall = string.substring(0, string.indexOf("?"));
@@ -183,6 +187,14 @@ public class MainActivity extends BaseWebViewActivity {
         userModel.saveAsPreference();
 
         this.moveWithinBase("pages/search/searchMain.php");
+    }
+
+    private void nativeCall_logout(){
+        UserModel userModel = new UserModel();
+        userModel.setAutoLogin(false);
+        userModel.saveAsPreference();
+
+        this.moveWithinBase("");
     }
 
     private void nativeCall_sendImageMeta(String path){
