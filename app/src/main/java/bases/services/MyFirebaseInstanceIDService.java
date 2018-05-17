@@ -12,6 +12,7 @@ import java.util.Map;
 
 import bases.Configs;
 import bases.Constants;
+import bases.utils.PreferenceUtil;
 import comm.SimpleCall;
 import comm.model.UserModel;
 
@@ -24,6 +25,8 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
+
+        PreferenceUtil.setString("pKeyPickle", refreshedToken);
 
         UserModel userModel = UserModel.getFromPreference();
         if(!UserModel.isSatisfied()){

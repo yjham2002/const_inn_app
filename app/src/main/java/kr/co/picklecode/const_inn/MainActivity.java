@@ -19,6 +19,7 @@ import bases.BaseActivity;
 import bases.BaseWebViewActivity;
 import bases.Configs;
 import bases.callbacks.SimpleWebViewCallback;
+import bases.utils.PreferenceUtil;
 import comm.model.UserModel;
 
 public class MainActivity extends BaseWebViewActivity {
@@ -45,7 +46,11 @@ public class MainActivity extends BaseWebViewActivity {
                 Log.e(TAG, "overrode url : " + string);
                 switch (string){
                     case "getPushKey" : {
-                        if(UserModel.isSatisfied()) nativeCall_sendPushKey(UserModel.getFromPreference().getMessageToken());
+                        if(UserModel.isSatisfied()){
+                            nativeCall_sendPushKey(UserModel.getFromPreference().getMessageToken());
+                        }else{
+                            nativeCall_sendPushKey(PreferenceUtil.getString("pKeyPickle"));
+                        }
                         break;
                     }
                     case "cropImage" : {
@@ -147,7 +152,9 @@ public class MainActivity extends BaseWebViewActivity {
     }
 
     private void nativeCall_sendPushKey(String pushKey){
-        if(pushKey == null) return;
+        if(pushKey == null) {
+            pushKey = "";
+        }
         try {
             String encoded = URLEncoder.encode(pushKey, "UTF-8");
             this.loadUrl("javascript:getPushKeyCallBack(\'" + encoded + "\')");
@@ -190,8 +197,13 @@ public class MainActivity extends BaseWebViewActivity {
     }
 
     private void nativeCall_logout(){
+        String pKey = "";
+        if(UserModel.isSatisfied()){
+            pKey = UserModel.getFromPreference().getMessageToken();
+        }
         UserModel userModel = new UserModel();
         userModel.setAutoLogin(false);
+        userModel.setMessageToken(pKey);
         userModel.saveAsPreference();
 
         this.moveWithinBase("");
