@@ -1,6 +1,10 @@
 package kr.co.picklecode.const_inn;
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +22,7 @@ import java.net.URLEncoder;
 import bases.BaseActivity;
 import bases.BaseWebViewActivity;
 import bases.Configs;
+import bases.Constants;
 import bases.callbacks.SimpleWebViewCallback;
 import bases.utils.PreferenceUtil;
 import comm.model.UserModel;
@@ -26,7 +31,37 @@ public class MainActivity extends BaseWebViewActivity {
 
     private static final String TAG = "BaseWebViewActivity";
 
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e("MainActivity", "onReceive : " + intent);
+            if(intent.getExtras() == null && !intent.getExtras().containsKey("action")) return;
+            Log.e("MainActivity", "onReceiveExtra : " + intent.getExtras());
+            final String action = intent.getExtras().getString("action");
+            switch (action){
+                case "gotoRecruit" :  {
+                    if(UserModel.isSatisfied()){
+                        UserModel userModel = UserModel.getFromPreference();
+                        MainActivity.this.moveWithinBase("/pages/mypage/applyInfo.php?byPush=1&userId=" + userModel.getUserNo());
+                    }
+                }
+                break;
+                default: break;
+            }
+        }
+    };
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter(Constants.INTENT_NOTIFICATION.REP_FILTER));
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,8 +169,12 @@ public class MainActivity extends BaseWebViewActivity {
         UserModel userModel = UserModel.getFromPreference();
 
         if(UserModel.isSatisfied()){
-            final boolean autoLogin = userModel.isAutoLogin();
-            this.moveWithinBase(String.format("?auto=%s&id=%d", Boolean.toString(autoLogin), userModel.getUserNo()));
+            if(getIntent().getExtras() != null && getIntent().getExtras().containsKey("isRedirect") && getIntent().getExtras().getBoolean("isRedirect")){
+                this.moveWithinBase("/pages/mypage/applyInfo.php?byPush=1&userId=" + userModel.getUserNo());
+            }else{
+                final boolean autoLogin = userModel.isAutoLogin();
+                this.moveWithinBase(String.format("?auto=%s&id=%d", Boolean.toString(autoLogin), userModel.getUserNo()));
+            }
         }else{
             this.moveWithinBase("");
         }

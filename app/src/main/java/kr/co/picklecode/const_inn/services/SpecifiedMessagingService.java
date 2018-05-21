@@ -69,6 +69,8 @@ public class SpecifiedMessagingService extends MyFirebaseMessagingService {
         if(isRedirect){
             contentViews.setViewVisibility(R.id.noti_class, View.GONE);
             contentViews.setViewVisibility(R.id.noti_msg, View.GONE);
+            contentViews.setViewVisibility(R.id.brace1, View.GONE);
+            contentViews.setViewVisibility(R.id.brace2, View.GONE);
         }
 
         int yesCode = isRedirect ? Constants.INTENT_NOTIFICATION.REQ_CODE_ACTION_REDIRECT : Constants.INTENT_NOTIFICATION.REQ_CODE_ACTION_YES;
@@ -76,6 +78,7 @@ public class SpecifiedMessagingService extends MyFirebaseMessagingService {
         Intent noti_yes_intent = new Intent(this, GlobalReceiver.class);
         noti_yes_intent.putExtra("articleNumber", extra.get("articleNumber"));
         noti_yes_intent.putExtra("isYes", true);
+        noti_yes_intent.putExtra("isRedirect", isRedirect);
         PendingIntent noti_yes_pIntent = PendingIntent.getBroadcast(this, yesCode, noti_yes_intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent noti_no_intent = new Intent(this, GlobalReceiver.class);
