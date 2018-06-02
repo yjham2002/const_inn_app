@@ -52,8 +52,27 @@ public class MainActivity extends BaseWebViewActivity {
     };
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
     public void onResume(){
         super.onResume();
+        UserModel userModel = UserModel.getFromPreference();
+
+        if(UserModel.isSatisfied()){
+            if(getIntent().getExtras() != null && getIntent().getExtras().containsKey("isRedirect") && getIntent().getExtras().getBoolean("isRedirect")){
+                this.moveWithinBase("/pages/mypage/applyInfo.php?byPush=1&userId=" + userModel.getUserNo());
+            }
+//            else{
+//                final boolean autoLogin = userModel.isAutoLogin();
+//                this.moveWithinBase(String.format("?auto=%s&id=%d", Boolean.toString(autoLogin), userModel.getUserNo()));
+//            }
+        }else{
+//            this.moveWithinBase("");
+        }
         registerReceiver(broadcastReceiver, new IntentFilter(Constants.INTENT_NOTIFICATION.REP_FILTER));
     }
 
